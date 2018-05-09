@@ -6,7 +6,16 @@ name = "pypi"
 [dev-packages]
 
 [packages]
-pyspark = "*"
+beautifulsoup4 = ">=4.6,<5.0"
+iso8601 = ">=0.1.12,<1.0"
+lxml = ">=4.2.3,<5.0"
+matplotlib = ">=2.2.2,<3.0"
+nltk = ">=3.3,<4.0"
+pandas = ">=0.23.1,<3.0"
+psutil = ">=5.4.6,<6.0"
+pyspark = ">=2.3.1,<3.0"
+
+pattern = {git = "https://github.com/clips/pattern", ref="55549135e87b6e38d4f864843c041f8099687d26"}
 
 [requires]
 python_version = "3.6"
