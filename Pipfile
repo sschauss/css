@@ -6,8 +6,10 @@ name = "pypi"
 [dev-packages]
 
 [packages]
-pyspark = "*"
 beautifulsoup4 = "*"
+pyspark = "*"
+nltk = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.6"
