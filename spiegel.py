@@ -1,11 +1,10 @@
-from pyspark.sql import SparkSession
+from pyspark.sql import Row, SparkSession
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup, Comment
 from functools import reduce
 from common import download
 from traceback import format_exc
 import re
-import math
 
 min_date = datetime(2000, 1, 1)
 base_url = 'http://www.spiegel.de'
@@ -20,9 +19,9 @@ def build_archive_url(date):
     return archive_url_template.format(date.strftime('%d.%m.%Y'))
 
 
-def generate_urls(min_date):
+def generate_dates(min_date):
     delta = datetime.today() - min_date
-    return [build_archive_url(min_date + timedelta(days=n)) for n in range(delta.days)]
+    return [min_date + timedelta(days=n) for n in range(delta.days)]
 
 
 def extract_article_urls(url):
@@ -72,40 +71,27 @@ def extract_article_content(url):
                     comment.extract()
                 content = re.sub('(\r\n|\n|\t|\s+)', ' ',
                                  reduce(lambda agg, cur: agg + ' ' + cur, content_main.findAll(text=True)))
-                return url, content
+                return content
     except Exception as e:
         print('extraction of {} failed ({})'.format(url, format_exc()))
 
 
 if __name__ == '__main__':
-    urls = generate_urls(min_date)
+    dates = generate_dates(min_date)
     article_urls = spark \
         .sparkContext \
-        .parallelize(urls) \
+        .parallelize(dates) \
         .sample(fraction=sample_fraction, withReplacement=False) \
-        .flatMap(lambda archive_url: extract_article_urls(archive_url)) \
-        .filter(lambda article_url: 'spiegel.de' in article_url) \
-        .filter(lambda article_url: 'spiegel.de/video' not in article_url) \
-        .cache()
-
-    article_urls \
-        .map(lambda article_url: (article_url, )) \
-        .toDF(['url']) \
+        .map(lambda date: Row(date=date, archive_url=build_archive_url(date))) \
+        .flatMap(lambda row: [Row(date=row.date, article_url=url) for url in extract_article_urls(row.archive_url)]) \
+        .filter(lambda row: 'spiegel.de' in row.article_url) \
+        .filter(lambda row: 'spiegel.de/video' not in row.article_url) \
+        .repartition(512) \
+        .map(lambda row: Row(date=row.date, article_url=row.article_url, article=extract_article_content(row.article_url))) \
+        .filter(lambda row: row.article is not None) \
+        .toDF(['date', 'url', 'article']) \
         .write \
         .format('csv') \
         .mode('overwrite') \
-        .save('article_urls-csv')
-
-    article_url_count = article_urls.count()
-
-    print('article url count: {}'.format(article_url_count))
-
-    article_urls \
-        .repartition(max(executor_count, math.ceil(article_url_count / 512.0))) \
-        .map(lambda article_url: extract_article_content(article_url)) \
-        .filter(lambda article: article is not None) \
-        .toDF(['url', 'article']) \
-        .write \
-        .format('csv') \
-        .mode('overwrite') \
+        .option("header", "true") \
         .save('articles-csv')
