@@ -89,7 +89,7 @@ if __name__ == '__main__':
         .repartition(512) \
         .map(lambda row: Row(date=row.date, article_url=row.article_url, article=extract_article_content(row.article_url))) \
         .filter(lambda row: row.article is not None) \
-        .toDF(['date', 'url', 'article']) \
+        .toDF() \
         .write \
         .format('csv') \
         .mode('overwrite') \
