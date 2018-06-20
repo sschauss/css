@@ -10,6 +10,7 @@ beautifulsoup4 = "*"
 pyspark = "*"
 nltk = "*"
 lxml = "*"
+pattern = {git = "https://github.com/clips/pattern", ref = "python3"}
 
 [requires]
 python_version = "3.6"
