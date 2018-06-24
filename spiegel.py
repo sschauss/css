@@ -1,10 +1,12 @@
-from pyspark.sql import Row, SparkSession
-from datetime import datetime, timedelta
-from bs4 import BeautifulSoup, Comment
-from functools import reduce
-from common import download
-from traceback import format_exc
 import re
+from datetime import datetime, timedelta
+from functools import reduce
+from traceback import format_exc
+
+from bs4 import BeautifulSoup, Comment
+from pyspark.sql import Row, SparkSession
+
+from common import download
 
 min_date = datetime(2000, 1, 1)
 base_url = 'http://www.spiegel.de'
@@ -12,7 +14,6 @@ archive_url_template = base_url + '/nachrichtenarchiv/artikel-{}.html'
 
 executor_count = 64
 sample_fraction = 1
-spark = SparkSession.builder.appName('scraper').master('local[{}]'.format(executor_count)).getOrCreate()
 
 
 def build_archive_url(date):
@@ -77,6 +78,8 @@ def extract_article_content(url):
 
 
 if __name__ == '__main__':
+    spark = SparkSession.builder.appName('scraper').master('local[{}]'.format(executor_count)).getOrCreate()
+
     dates = generate_dates(min_date)
     article_urls = spark \
         .sparkContext \
@@ -87,7 +90,8 @@ if __name__ == '__main__':
         .filter(lambda row: 'spiegel.de' in row.article_url) \
         .filter(lambda row: 'spiegel.de/video' not in row.article_url) \
         .repartition(512) \
-        .map(lambda row: Row(date=row.date, article_url=row.article_url, article=extract_article_content(row.article_url))) \
+        .map(
+        lambda row: Row(date=row.date, article_url=row.article_url, article=extract_article_content(row.article_url))) \
         .filter(lambda row: row.article is not None) \
         .toDF() \
         .write \

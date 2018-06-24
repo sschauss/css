@@ -41,35 +41,16 @@ def load_sentiment(file):
 pos = load_sentiment(pos_file)
 neg = load_sentiment(neg_file)
 
-# Combine dictionaries
-combined = pos.copy()
-combined.update(neg)
-
 
 def sentiment_german(sentence_tagged):
     """
     Generates a score for the given sentence.
     :param sentence_tagged: A list of words and their pos tags, as (word, POS)
-    :return: Returns the score values as (sum, n)
+    :return: Returns the score values as (sum positive, sum_negative, n)
     """
     # Get scores base on word and POS tag.
-    scores = list(combined.get((word.lower(), tag), 0.0) for (word, tag) in sentence_tagged)
+    scores_pos = list(pos.get((word.lower(), tag), 0.0) for (word, tag) in sentence_tagged)
+    scores_neg = list(neg.get((word.lower(), tag), 0.0) for (word, tag) in sentence_tagged)
 
     # Return sum, word count, min and max.
-    return sum(scores), len(scores)
-
-# if __name__ == '__main__':
-#     with open("../articles/articles-csv/part-00071-41da5c05-2d0c-46f7-8914-cc50230d2634-c000.csv", "r",
-#               encoding="utf-8") as h:
-#         articles = reader(h, doublequote=False, escapechar="\\")
-#         next(articles, None)
-#         for article in articles:
-#             print("======================================")
-#             total = 0
-#             for sentence in sentences_german(article[0]):
-#                 tagged = postag_german(sentence)
-#                 analysed = sentiment_german(tagged)
-#                 print("%f: %s" % (analysed[0], sentence))
-#                 total += analysed[0]
-#             print("Overall: %f" % total)
-#             print()
+    return sum(scores_pos), sum(scores_neg), len(scores_pos)

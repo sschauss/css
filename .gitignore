@@ -171,4 +171,5 @@ venv.bak/
 .mypy_cache/
 
 
-# End of https://www.gitignore.io/api/python,intellij+all
+# End of https://www.gitignore.io/api/python,intellij+all*.svg
+*.svg

@@ -13,6 +13,8 @@ lxml = "*"
 pattern = {git = "https://github.com/clips/pattern", ref = "python3"}
 "iso8601" = "*"
 psutil = "*"
+pandas = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.6"
