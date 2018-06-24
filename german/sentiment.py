@@ -1,12 +1,10 @@
 # Source of sentiment analysis http://wortschatz.uni-leipzig.de/de/download#sentiWSDownload
 import itertools
 from csv import reader
+from os.path import join, dirname
 
-from german.postag import postag_german
-from german.punkt import sentences_german
-
-pos_file = 'SentiWS_v1.8c_Positive.txt'
-neg_file = 'SentiWS_v1.8c_Negative.txt'
+pos_file = join(dirname(__file__), "SentiWS_v1.8c_Positive.txt")
+neg_file = join(dirname(__file__), "SentiWS_v1.8c_Negative.txt")
 
 
 def load_sentiment(file):
@@ -52,27 +50,26 @@ def sentiment_german(sentence_tagged):
     """
     Generates a score for the given sentence.
     :param sentence_tagged: A list of words and their pos tags, as (word, POS)
-    :return: Returns the score values as (sum, n, min, max)
+    :return: Returns the score values as (sum, n)
     """
     # Get scores base on word and POS tag.
     scores = list(combined.get((word.lower(), tag), 0.0) for (word, tag) in sentence_tagged)
 
     # Return sum, word count, min and max.
-    return sum(scores), len(scores), min(scores), max(scores)
+    return sum(scores), len(scores)
 
-
-if __name__ == '__main__':
-    with open("../articles/articles-csv/part-00071-41da5c05-2d0c-46f7-8914-cc50230d2634-c000.csv", "r",
-              encoding="utf-8") as h:
-        articles = reader(h, doublequote=False, escapechar="\\")
-        next(articles, None)
-        for article in articles:
-            print("======================================")
-            total = 0
-            for sentence in sentences_german(article[0]):
-                tagged = postag_german(sentence)
-                analysed = sentiment_german(tagged)
-                print("%f: %s" % (analysed[0], sentence))
-                total += analysed[0]
-            print("Overall: %f" % total)
-            print()
+# if __name__ == '__main__':
+#     with open("../articles/articles-csv/part-00071-41da5c05-2d0c-46f7-8914-cc50230d2634-c000.csv", "r",
+#               encoding="utf-8") as h:
+#         articles = reader(h, doublequote=False, escapechar="\\")
+#         next(articles, None)
+#         for article in articles:
+#             print("======================================")
+#             total = 0
+#             for sentence in sentences_german(article[0]):
+#                 tagged = postag_german(sentence)
+#                 analysed = sentiment_german(tagged)
+#                 print("%f: %s" % (analysed[0], sentence))
+#                 total += analysed[0]
+#             print("Overall: %f" % total)
+#             print()

@@ -11,6 +11,8 @@ pyspark = "*"
 nltk = "*"
 lxml = "*"
 pattern = {git = "https://github.com/clips/pattern", ref = "python3"}
+"iso8601" = "*"
+psutil = "*"
 
 [requires]
 python_version = "3.6"
