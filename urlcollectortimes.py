@@ -42,5 +42,4 @@ for date in dates:
             pubdate=pubdate.split('T',1)[0]
             urldate.append(pubdate)
             file.write(str(urldate) + ";")
-            print(str(urldate)+ " done")
 file.close()
